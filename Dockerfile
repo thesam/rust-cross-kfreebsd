@@ -25,3 +25,7 @@ RUN apt-get install -y libssl-dev cmake python curl
 RUN ./configure
 RUN make
 ENV PATH /buildrust/cargo/target/x86_64-unknown-linux-gnu/release:$PATH
+WORKDIR /buildrust/rust/src/rustc
+ENV PATH /buildrust/rust/x86_64-unknown-linux-gnu/llvm/bin:$PATH
+# TODO: https://github.com/rust-lang/rust/issues/15684
+RUN CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-linux-gnu cargo build
