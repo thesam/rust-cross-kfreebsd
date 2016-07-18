@@ -16,3 +16,12 @@ RUN make -j4 rustc-stage1
 RUN make -j4
 #TODO: Fails since jemalloc is disabled. /buildrust/rust/src/test/run-pass/allocator-default.rs:14:1: 14:29 error: can't find crate for `alloc_jemalloc` [E0463]
 #RUN make check
+ENV PATH /buildrust/rust/x86_64-unknown-linux-gnu/stage2/bin:$PATH
+WORKDIR /buildrust
+RUN git clone --recursive https://github.com/rust-lang/cargo
+WORKDIR /buildrust/cargo
+#RUN git checkout 0.11.0
+RUN apt-get install -y libssl-dev cmake python curl
+RUN ./configure
+RUN make
+ENV PATH /buildrust/cargo/target/x86_64-unknown-linux-gnu/release:$PATH
