@@ -25,7 +25,14 @@ RUN apt-get install -y libssl-dev cmake python curl
 RUN ./configure
 RUN make
 ENV PATH /buildrust/cargo/target/x86_64-unknown-linux-gnu/release:$PATH
-WORKDIR /buildrust/rust/src/rustc
-ENV PATH /buildrust/rust/x86_64-unknown-linux-gnu/llvm/bin:$PATH
+WORKDIR /buildrust/build-llvm
+#TODO: PATH_MAX is not correctly detected for kFreeBSD?
+RUN sed 's/_POSIX_PATH_MAX/4096/' -i /buildrust/rust/src/llvm/utils/unittest/googletest/src/gtest-filepath.cc
+RUN ../rust/src/llvm/configure --host=x86_64-kfreebsd-gnu --target=x86_64-kfreebsd-gnu
+#TODO: compile to linux first, does that work?
+#RUN make -j4
+
+#WORKDIR /buildrust/rust/src/rustc
+#ENV PATH /buildrust/rust/x86_64-unknown-linux-gnu/llvm/bin:$PATH
 # TODO: https://github.com/rust-lang/rust/issues/15684
-RUN CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-linux-gnu cargo build
+#RUN CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-kfreebsd-gnu cargo build --target=x86_64-unknown-kfreebsd-gnu
