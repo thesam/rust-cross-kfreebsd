@@ -58,7 +58,6 @@ RUN echo "[target.x86_64-unknown-kfreebsd-gnu]" > ~/.cargo/config
 RUN echo 'linker = "x86_64-kfreebsd-gnu-gcc"' >> ~/.cargo/config
 # Needs LLVM libs for the target, but llvm-config from the host
 #TODO: Is CFG_COMPILER_HOST_TRIPLE needed/correct?
-RUN LLVM_CONFIG=/build/build-rust/x86_64-unknown-linux-gnu/llvm/bin/llvm-config CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-linux-gnu cargo build --target x86_64-unknown-kfreebsd-gnu --release
-# TODO: Will not run on debian jessie: version 'GLIBCXX_3.4.21' not found
-# TODO: https://github.com/rust-lang/rust/issues/15684
+RUN LLVM_CONFIG=/build/build-rust/x86_64-unknown-linux-gnu/llvm/bin/llvm-config CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-kfreebsd-gnu cargo build --target x86_64-unknown-kfreebsd-gnu
+# TODO: Remember https://github.com/rust-lang/rust/issues/15684
 # TODO: Package as a stage0 snapshot
