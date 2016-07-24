@@ -10,6 +10,20 @@ RUN apt-get update && apt-get install -y \
   libssl-dev
 
 WORKDIR /build
+RUN wget http://llvm.org/releases/3.8.1/llvm-3.8.1.src.tar.xz && tar xf llvm-3.8.1.src.tar.xz
+
+WORKDIR /build/build-llvm
+#TODO: LLVM does not seem to handle PATH_MAX correctly for kFreeBSD
+RUN sed -i "s/_POSIX_PATH_MAX/4096/" /build/llvm-3.8.1.src/utils/unittest/googletest/src/gtest-filepath.cc
+RUN sed -i "s/PATH_MAX/4096/" /build/llvm-3.8.1.src/tools/dsymutil/DwarfLinker.cpp
+RUN mkdir -p /build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/lib/
+RUN ../llvm-3.8.1.src/configure --host=x86_64-kfreebsd-gnu --target=x86_64-kfreebsd-gnu --prefix=/build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/
+#TODO: Parallel make does not seem to work well, gives errors about llvm-tblgen
+RUN make -j2
+RUN make install
+
+WORKDIR /build
+RUN echo "Rebuild from here..."
 RUN git clone -b kfreebsd --depth 1 https://www.github.com/thesam/rust
 
 WORKDIR /build/rust
@@ -39,19 +53,6 @@ WORKDIR /build/cargo
 RUN ./configure
 RUN make -j4
 ENV PATH /build/cargo/target/x86_64-unknown-linux-gnu/release:$PATH
-
-WORKDIR /build
-RUN wget http://llvm.org/releases/3.8.1/llvm-3.8.1.src.tar.xz && tar xf llvm-3.8.1.src.tar.xz
-
-WORKDIR /build/build-llvm
-#TODO: LLVM does not seem to handle PATH_MAX correctly for kFreeBSD
-RUN sed -i "s/_POSIX_PATH_MAX/4096/" /build/llvm-3.8.1.src/utils/unittest/googletest/src/gtest-filepath.cc
-RUN sed -i "s/PATH_MAX/4096/" /build/llvm-3.8.1.src/tools/dsymutil/DwarfLinker.cpp
-RUN mkdir -p /build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/lib/
-RUN ../llvm-3.8.1.src/configure --host=x86_64-kfreebsd-gnu --target=x86_64-kfreebsd-gnu --prefix=/build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/
-#TODO: Parallel make does not seem to work, gives errors about llvm-tblgen
-RUN make -j2
-RUN make install
 
 WORKDIR /build/rust/src/rustc
 RUN echo "[target.x86_64-unknown-kfreebsd-gnu]" > ~/.cargo/config
