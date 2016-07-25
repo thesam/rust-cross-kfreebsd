@@ -2,11 +2,12 @@
 A Docker container which cross-compiles Rust for Debian GNU/kFreeBSD.
 
 ## Goals
-* Add kFreeBSD as a cross-compile target in rustc - IN PROGRESS
+* Add kFreeBSD as a cross-compile target in rustc - IN PROGRESS - https://github.com/thesam/rust
 * Cross-compile "Hello, world!" for kFreeBSD - DONE
 * Cross-compile rustc for kFreeBSD - DONE
-* Compile libcore on kFreeBSD - IN PROGRESS
+* Compile libcore on kFreeBSD - IN PROGRESS, issue #2
 * Run a complete rustc build on kFreeBSD
+* Submit pull requests to upstream projects
 * Compile cargo on kFreeBSD
 
 ## How to use
