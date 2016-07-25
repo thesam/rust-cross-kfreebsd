@@ -55,10 +55,15 @@ RUN make -j4
 ENV PATH /build/cargo/target/x86_64-unknown-linux-gnu/release:$PATH
 
 WORKDIR /build/rust/src/rustc
+# When the dependencies are rlibs rustc will have them statically linked. This will make rustc easier to use on the target.
+RUN sed -i 's/crate-type.*/crate_type = ["rlib"]/' ../*/Cargo.toml
+
 RUN echo "[target.x86_64-unknown-kfreebsd-gnu]" > ~/.cargo/config
 RUN echo 'linker = "x86_64-kfreebsd-gnu-gcc"' >> ~/.cargo/config
+
 # Needs LLVM libs for the target, but llvm-config from the host
 #TODO: Is CFG_COMPILER_HOST_TRIPLE needed/correct?
 RUN LLVM_CONFIG=/build/build-rust/x86_64-unknown-linux-gnu/llvm/bin/llvm-config CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-kfreebsd-gnu cargo build --target x86_64-unknown-kfreebsd-gnu
-# TODO: Remember https://github.com/rust-lang/rust/issues/15684
+
 # TODO: Package as a stage0 snapshot
+# TODO on target when compiling libcore: *** Error in `rustc': double free or corruption (!prev): 0x00000008130af660 ***
