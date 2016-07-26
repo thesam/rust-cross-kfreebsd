@@ -67,7 +67,10 @@ RUN echo 'linker = "x86_64-kfreebsd-gnu-gcc"' >> ~/.cargo/config
 #TODO: Is the correct LLVM lib path being used here?
 #TODO: Is CFG_COMPILER_HOST_TRIPLE needed/correct?
 #TODO: Why is RUNPATH not set?
-RUN LLVM_CONFIG=/build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/bin/x86_64-kfreebsd-gnu-llvm-config-host CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-kfreebsd-gnu cargo build --target x86_64-unknown-kfreebsd-gnu
+RUN LLVM_CONFIG=/build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/bin/x86_64-kfreebsd-gnu-llvm-config-host \
+    CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-kfreebsd-gnu \
+    cargo build --release \
+    --target x86_64-unknown-kfreebsd-gnu
 
 # TODO: Package as a stage0 snapshot
 # TODO on target when compiling libcore: *** Error in `rustc': double free or corruption (!prev): 0x00000008130af660 ***
