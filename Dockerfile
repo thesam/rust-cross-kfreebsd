@@ -12,15 +12,13 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /build
 RUN wget http://llvm.org/releases/3.8.1/llvm-3.8.1.src.tar.xz && tar xf llvm-3.8.1.src.tar.xz
 
-#TODO: Configure --host instead and see if the rust build system will build LLVM for kFreeBSD as well.
 WORKDIR /build/build-llvm
 #TODO: LLVM does not seem to handle PATH_MAX correctly for kFreeBSD
 RUN sed -i "s/_POSIX_PATH_MAX/4096/" /build/llvm-3.8.1.src/utils/unittest/googletest/src/gtest-filepath.cc
 RUN sed -i "s/PATH_MAX/4096/" /build/llvm-3.8.1.src/tools/dsymutil/DwarfLinker.cpp
 RUN mkdir -p /build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/lib/
-#TODO: Install outside rust build dir
 RUN ../llvm-3.8.1.src/configure --host=x86_64-kfreebsd-gnu --target=x86_64-kfreebsd-gnu --prefix=/build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/
-#TODO: Parallel make does not seem to work well, gives errors about llvm-tblgen
+#TODO: Parallel make > 2 does not seem to work well, gives errors about llvm-tblgen
 RUN make -j2
 RUN make install
 
@@ -57,20 +55,15 @@ RUN make -j4
 ENV PATH /build/cargo/target/x86_64-unknown-linux-gnu/release:$PATH
 
 WORKDIR /build/rust/src/rustc
-# MAYBE: When the dependencies are rlibs like this, rustc will have them statically linked. This will make rustc easier to use on the target.
+# When the dependencies are rlibs like this, rustc will have them statically linked. This will make rustc easier to use on the target.
 RUN sed -i 's/crate-type.*/crate_type = ["rlib"]/' ../*/Cargo.toml
 
 RUN echo "[target.x86_64-unknown-kfreebsd-gnu]" > ~/.cargo/config
 RUN echo 'linker = "x86_64-kfreebsd-gnu-gcc"' >> ~/.cargo/config
 
 # Needs LLVM libs for the target, but llvm-config from the host
-#TODO: Is the correct LLVM lib path being used here?
-#TODO: Is CFG_COMPILER_HOST_TRIPLE needed/correct?
 #TODO: Why is RUNPATH not set?
 RUN LLVM_CONFIG=/build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/bin/x86_64-kfreebsd-gnu-llvm-config-host \
     CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-kfreebsd-gnu \
     cargo build --release \
     --target x86_64-unknown-kfreebsd-gnu
-
-# TODO: Package as a stage0 snapshot
-# TODO on target when compiling libcore: *** Error in `rustc': double free or corruption (!prev): 0x00000008130af660 ***
