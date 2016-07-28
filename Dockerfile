@@ -22,8 +22,16 @@ RUN ../llvm-3.8.1.src/configure --host=x86_64-kfreebsd-gnu --target=x86_64-kfree
 RUN make -j2
 RUN make install
 
+# We need a newer cmake to build cargo
+# TODO: Only install this version, don't install the one included in Debian above.
+RUN apt-get purge -y cmake
+RUN apt-get autoremove -y
 WORKDIR /build
-RUN echo "Rebuild from here..."
+RUN wget https://cmake.org/files/v3.6/cmake-3.6.1-Linux-x86_64.tar.gz && tar xf cmake-3.6.1-Linux-x86_64.tar.gz
+ENV PATH /build/cmake-3.6.1-Linux-x86_64/bin:$PATH
+
+WORKDIR /build
+RUN echo "Rebuild from here 2016-07-28"
 RUN git clone -b kfreebsd --depth 1 https://www.github.com/thesam/rust
 
 WORKDIR /build/rust
@@ -40,13 +48,6 @@ RUN make -j8 # rustdoc needed to compile cargo
 #RUN make check
 ENV PATH /build/build-rust/x86_64-unknown-linux-gnu/stage2/bin:$PATH
 
-# We need a newer cmake to build cargo
-RUN apt-get purge -y cmake
-RUN apt-get autoremove -y
-WORKDIR /build
-RUN wget https://cmake.org/files/v3.6/cmake-3.6.1-Linux-x86_64.tar.gz && tar xf cmake-3.6.1-Linux-x86_64.tar.gz
-ENV PATH /build/cmake-3.6.1-Linux-x86_64/bin:$PATH
-
 WORKDIR /build
 RUN git clone --recursive --depth 1 https://github.com/rust-lang/cargo
 WORKDIR /build/cargo
@@ -55,7 +56,7 @@ RUN make -j4
 ENV PATH /build/cargo/target/x86_64-unknown-linux-gnu/release:$PATH
 
 WORKDIR /build/rust/src/rustc
-# When the dependencies are rlibs like this, rustc will have them statically linked. This will make rustc easier to use on the target.
+# MAYBE: When the dependencies are rlibs like this, rustc will have them statically linked. This will make rustc easier to use on the target.
 RUN sed -i 's/crate-type.*/crate_type = ["rlib"]/' ../*/Cargo.toml
 
 RUN echo "[target.x86_64-unknown-kfreebsd-gnu]" > ~/.cargo/config
@@ -65,5 +66,6 @@ RUN echo 'linker = "x86_64-kfreebsd-gnu-gcc"' >> ~/.cargo/config
 #TODO: Why is RUNPATH not set?
 RUN LLVM_CONFIG=/build/build-rust/x86_64-unknown-kfreebsd-gnu/llvm/bin/x86_64-kfreebsd-gnu-llvm-config-host \
     CFG_COMPILER_HOST_TRIPLE=x86_64-unknown-kfreebsd-gnu \
-    cargo build --release \
+    cargo build \
+    --release \
     --target x86_64-unknown-kfreebsd-gnu
