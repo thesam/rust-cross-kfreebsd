@@ -29,8 +29,11 @@ scp target/x86_64-unknown-kfreebsd-gnu/release/rustc YOURUSER@YOURHOST:myrust/bi
 ### Step 3: On GNU/kFreeBSD host
 A full Rust build will be run with the new rustc. This ensures that the bootstrap process will work on the host, and will result in a resdistributable .tar.gz.
 ```
+git clone -b kfreebsd https://github.com/thesam/rust
 export PATH=~/myrust/bin:$PATH
-./configure --disable-jemalloc --disable-rpath --enable-local-rust
+mkdir build-rust
+cd build-rust
+../rust/configure --disable-jemalloc --disable-rpath --enable-local-rust
 TODO
 ```
 
