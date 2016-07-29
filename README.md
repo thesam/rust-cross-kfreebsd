@@ -16,11 +16,21 @@ This step will cross-compile rustc for the kFreeBSD platform. The resulting rust
 ```
 git clone https://www.github.com/thesam/debian-linux-kfreebsd-cross.git
 git clone https://www.github.com/thesam/rust-cross-kfreebsd.git
-TODO
+docker build -t thesam/debian-linux-kfreebsd-cross debian-linux-kfreebsd-cross
+docker build -t thesam/rust-cross-kfreebsd rust-cross-kfreebsd
+docker run -it thesam/rust-cross-kfreebsd
 ```
-### Step 2: On GNU/kFreeBSD host
+### Step 2: Inside the Docker container
+The rustc binary must be copied from the container to the kFreeBSD host.
+```
+ssh YOURUSER@YOURHOST 'mkdir -p ~/myrust/bin'
+scp target/x86_64-unknown-kfreebsd-gnu/release/rustc YOURUSER@YOURHOST:myrust/bin/rustc
+```
+### Step 3: On GNU/kFreeBSD host
 A full Rust build will be run with the new rustc. This ensures that the bootstrap process will work on the host, and will result in a resdistributable .tar.gz.
 ```
+export PATH=~/myrust/bin:$PATH
+./configure --disable-jemalloc --disable-rpath --enable-local-rust
 TODO
 ```
 
