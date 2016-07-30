@@ -7,11 +7,10 @@ A Docker container which cross-compiles Rust for Debian GNU/kFreeBSD.
 * Cross-compile rustc for kFreeBSD - DONE
 * Compile libcore on kFreeBSD - DONE
 * Run a complete rustc build on kFreeBSD
-  * make rustc-stage1 - DONE
-  * make rustc-stage2 - DONE
-  * make - IN PROGRESS
+  * make - DONE
   * make check - ?
   * make dist - ?
+* Fix remaining issues
 * Submit pull requests to upstream projects
 * Compile cargo on kFreeBSD
 
